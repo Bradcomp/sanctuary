@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('unfoldr', function() {
@@ -13,20 +10,7 @@ describe('unfoldr', function() {
   it('is a binary function', function() {
     eq(typeof S.unfoldr, 'function');
     eq(S.unfoldr.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.unfoldr(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'unfoldr :: Function -> b -> Array a\n' +
-                   '           ^^^^^^^^\n' +
-                   '              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(S.unfoldr.toString(), 'unfoldr :: (b -> Maybe (Pair a b)) -> b -> Array a');
   });
 
   it('correctly unfolds a value into a list', function() {

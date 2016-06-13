@@ -8,6 +8,12 @@ var eq = require('./internal/eq');
 
 describe('encaseEither3_', function() {
 
+  it('is a quinary function', function() {
+    eq(typeof S.encaseEither3_, 'function');
+    eq(S.encaseEither3_.length, 5);
+    eq(S.encaseEither3_.toString(), 'encaseEither3_ :: (Error -> l) -> ((a, b, c) -> r) -> a -> b -> c -> Either l r');
+  });
+
   it('returns a Right on success', function() {
     eq(S.encaseEither3_(S.I, area_, 3, 4, 5), S.Right(6));
   });

@@ -10,6 +10,7 @@ describe('and', function() {
   it('is a binary function', function() {
     eq(typeof S.and, 'function');
     eq(S.and.length, 2);
+    eq(S.and.toString(), 'and :: Boolean -> Boolean -> Boolean');
   });
 
   it('has && semantics', function() {

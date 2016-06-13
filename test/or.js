@@ -10,6 +10,7 @@ describe('or', function() {
   it('is a binary function', function() {
     eq(typeof S.or, 'function');
     eq(S.or.length, 2);
+    eq(S.or.toString(), 'or :: Boolean -> Boolean -> Boolean');
   });
 
   it('has || semantics', function() {

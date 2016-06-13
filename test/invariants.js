@@ -1,53 +1,37 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var R = require('ramda');
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
+
+
+//  exceptions :: Array String
+var exceptions = ['Either', 'EitherType', 'Maybe', 'MaybeType'];
+
+//  functions :: Array Function
+var functions =
+Object.keys(S)
+.filter(function(k) { return exceptions.indexOf(k) < 0; })
+.map(function(k) { return S[k]; })
+.filter(function(x) { return typeof x === 'function'; });
 
 
 describe('invariants', function() {
 
   it('f() is equivalent to f for every "regular" function', function() {
-    for (var prop in S) {
-      if (typeof S[prop] === 'function' && /^(?![A-Z])/.test(prop)) {
-        var result = S[prop]();
-        eq(typeof result, 'function');
-        eq(result.length, S[prop].length);
-      }
-    }
+    functions.forEach(function(f) {
+      var result = f();
+      eq(typeof result, 'function');
+      eq(result.length, f.length);
+    });
   });
 
-  it('f(R.__) is equivalent to f for every "regular" function', function() {
-    for (var prop in S) {
-      if (typeof S[prop] === 'function' && /^(?![A-Z])/.test(prop)) {
-        var result = S[prop](R.__);
-        eq(typeof result, 'function');
-        eq(result.length, S[prop].length);
-      }
-    }
-  });
-
-  it('exported functions throw if applied to too many arguments', function() {
-    throws(function() { S.I(1, 2); },
-           errorEq(TypeError,
-                   '‘I’ requires one argument; received two arguments'));
-
-    throws(function() { S.K(1, 2, 3); },
-           errorEq(TypeError,
-                   '‘K’ requires two arguments; received three arguments'));
-
-    throws(function() { S.K(1)(2, 3); },
-           errorEq(TypeError,
-                   '‘K’ requires two arguments; received three arguments'));
-
-    throws(function() { S.K(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); },
-           errorEq(TypeError,
-                   '‘K’ requires two arguments; received 10 arguments'));
+  it('f(S.__) is equivalent to f for every "regular" function', function() {
+    functions.forEach(function(f) {
+      var result = f(S.__);
+      eq(typeof result, 'function');
+      eq(result.length, f.length);
+    });
   });
 
 });

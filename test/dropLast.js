@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('dropLast', function() {
@@ -13,32 +10,7 @@ describe('dropLast', function() {
   it('is a binary function', function() {
     eq(typeof S.dropLast, 'function');
     eq(S.dropLast.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.dropLast(0.5); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dropLast :: Integer -> List a -> Maybe (List a)\n' +
-                   '            ^^^^^^^\n' +
-                   '               1\n' +
-                   '\n' +
-                   '1)  0.5 :: Number, FiniteNumber, NonZeroFiniteNumber, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Integer’.\n'));
-
-    throws(function() { S.dropLast(0, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dropLast :: Integer -> List a -> Maybe (List a)\n' +
-                   '                       ^^^^^^\n' +
-                   '                         1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘List a’.\n'));
+    eq(S.dropLast.toString(), 'dropLast :: Integer -> List a -> Maybe (List a)');
   });
 
   it('returns Nothing if n is negative', function() {

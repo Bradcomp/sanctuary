@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('rights', function() {
@@ -13,20 +10,7 @@ describe('rights', function() {
   it('is a unary function', function() {
     eq(typeof S.rights, 'function');
     eq(S.rights.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.rights([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'rights :: Array (Either a b) -> Array b\n' +
-                   '                ^^^^^^^^^^^^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   '1)  1 :: Number, FiniteNumber, NonZeroFiniteNumber, Integer, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Either a b’.\n'));
+    eq(S.rights.toString(), 'rights :: Array (Either a b) -> Array b');
   });
 
   it('returns a list containing the value of each Right', function() {

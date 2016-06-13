@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('reduce', function() {
@@ -13,20 +10,7 @@ describe('reduce', function() {
   it('is a ternary function', function() {
     eq(typeof S.reduce, 'function');
     eq(S.reduce.length, 3);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.reduce('xxx'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'reduce :: Foldable b => Function -> a -> b -> a\n' +
-                   '                        ^^^^^^^^\n' +
-                   '                           1\n' +
-                   '\n' +
-                   '1)  "xxx" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(S.reduce.toString(), 'reduce :: Foldable f => (a -> b -> a) -> a -> f b -> a');
   });
 
   it('folds over lists with the supplied accumulator', function() {

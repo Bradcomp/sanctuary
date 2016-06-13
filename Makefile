@@ -6,6 +6,8 @@ REMEMBER_BOWER = node_modules/.bin/remember-bower
 TRANSCRIBE = node_modules/.bin/transcribe
 XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary.git --script scripts/prepublish
 
+Z_VERSION = $(shell node --print 'require("sanctuary-type-classes/package.json").version')
+
 
 .PHONY: all
 all: LICENSE README.md
@@ -60,11 +62,15 @@ setup:
 
 
 .PHONY: test
-test:
-	$(ISTANBUL) cover node_modules/.bin/_mocha -- --recursive --timeout 20000
+test: test/internal/Identity.js
+	$(ISTANBUL) cover node_modules/.bin/_mocha -- --recursive --timeout 10000
 	$(ISTANBUL) check-coverage --branches 100
 ifeq ($(shell node --version | cut -d . -f 1),v6)
 	$(DOCTEST) -- index.js
 else
 	@echo '[WARN] Doctests are only run in Node v6.x.x (current version is $(shell node --version))' >&2
 endif
+
+test/internal/Identity.js:
+	curl https://raw.githubusercontent.com/sanctuary-js/sanctuary-type-classes/v$(Z_VERSION)/test/Identity.js \
+	| sed "s/Z = require('..')/Z = require('sanctuary-type-classes')/" >'$@'

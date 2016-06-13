@@ -1,12 +1,9 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var area = require('./internal/area');
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('encaseEither3', function() {
@@ -14,32 +11,7 @@ describe('encaseEither3', function() {
   it('is a quinary function', function() {
     eq(typeof S.encaseEither3, 'function');
     eq(S.encaseEither3.length, 5);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.encaseEither3(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'encaseEither3 :: Function -> Function -> a -> b -> c -> Either l r\n' +
-                   '                 ^^^^^^^^\n' +
-                   '                    1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
-
-    throws(function() { S.encaseEither3(S.I, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'encaseEither3 :: Function -> Function -> a -> b -> c -> Either l r\n' +
-                   '                             ^^^^^^^^\n' +
-                   '                                1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(S.encaseEither3.toString(), 'encaseEither3 :: (Error -> l) -> (a -> b -> c -> r) -> a -> b -> c -> Either l r');
   });
 
   it('returns a Right on success', function() {

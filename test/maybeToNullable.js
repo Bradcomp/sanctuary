@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('maybeToNullable', function() {
@@ -13,20 +10,7 @@ describe('maybeToNullable', function() {
   it('is a unary function', function() {
     eq(typeof S.maybeToNullable, 'function');
     eq(S.maybeToNullable.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.maybeToNullable(/XXX/); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'maybeToNullable :: Maybe a -> Nullable a\n' +
-                   '                   ^^^^^^^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  /XXX/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Maybe a’.\n'));
+    eq(S.maybeToNullable.toString(), 'maybeToNullable :: Maybe a -> Nullable a');
   });
 
   it('can be applied to Nothing', function() {

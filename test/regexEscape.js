@@ -1,13 +1,10 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var jsc = require('jsverify');
 
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('regexEscape', function() {
@@ -15,20 +12,7 @@ describe('regexEscape', function() {
   it('is a unary function', function() {
     eq(typeof S.regexEscape, 'function');
     eq(S.regexEscape.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.regexEscape(/(?:)/); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'regexEscape :: String -> String\n' +
-                   '               ^^^^^^\n' +
-                   '                 1\n' +
-                   '\n' +
-                   '1)  /(?:)/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+    eq(S.regexEscape.toString(), 'regexEscape :: String -> String');
   });
 
   it('escapes regular expression metacharacters', function() {

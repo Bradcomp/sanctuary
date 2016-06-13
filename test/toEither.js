@@ -10,6 +10,7 @@ describe('toEither', function() {
   it('is a binary function', function() {
     eq(typeof S.toEither, 'function');
     eq(S.toEither.length, 2);
+    eq(S.toEither.toString(), 'toEither :: a -> b -> Either a b');
   });
 
   it('returns Left of the first argument when second argument is `null`-y', function() {

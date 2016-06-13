@@ -8,6 +8,12 @@ var rem_ = require('./internal/rem_');
 
 describe('encaseEither2_', function() {
 
+  it('is a quaternary function', function() {
+    eq(typeof S.encaseEither2_, 'function');
+    eq(S.encaseEither2_.length, 4);
+    eq(S.encaseEither2_.toString(), 'encaseEither2_ :: (Error -> l) -> ((a, b) -> r) -> a -> b -> Either l r');
+  });
+
   it('returns a Right on success', function() {
     eq(S.encaseEither2_(S.I, rem_, 42, 5), S.Right(2));
   });

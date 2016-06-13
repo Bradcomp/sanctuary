@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('maybeToEither', function() {
@@ -13,20 +10,7 @@ describe('maybeToEither', function() {
   it('is a binary function', function() {
     eq(typeof S.maybeToEither, 'function');
     eq(S.maybeToEither.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.maybeToEither('left', 1); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'maybeToEither :: a -> Maybe b -> Either a b\n' +
-                   '                      ^^^^^^^\n' +
-                   '                         1\n' +
-                   '\n' +
-                   '1)  1 :: Number, FiniteNumber, NonZeroFiniteNumber, Integer, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Maybe b’.\n'));
+    eq(S.maybeToEither.toString(), 'maybeToEither :: a -> Maybe b -> Either a b');
   });
 
   it('returns a Left of its first argument when the second is Nothing', function() {

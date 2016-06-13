@@ -1,11 +1,9 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
+var throws = require('./internal/throws');
 
 
 describe('parseInt', function() {
@@ -13,32 +11,7 @@ describe('parseInt', function() {
   it('is a binary function', function() {
     eq(typeof S.parseInt, 'function');
     eq(S.parseInt.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.parseInt(0.5); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'parseInt :: Integer -> String -> Maybe Integer\n' +
-                   '            ^^^^^^^\n' +
-                   '               1\n' +
-                   '\n' +
-                   '1)  0.5 :: Number, FiniteNumber, NonZeroFiniteNumber, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Integer’.\n'));
-
-    throws(function() { S.parseInt(10, 42); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'parseInt :: Integer -> String -> Maybe Integer\n' +
-                   '                       ^^^^^^\n' +
-                   '                         1\n' +
-                   '\n' +
-                   '1)  42 :: Number, FiniteNumber, NonZeroFiniteNumber, Integer, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+    eq(S.parseInt.toString(), 'parseInt :: Integer -> String -> Maybe Integer');
   });
 
   it('returns a Maybe', function() {
@@ -123,10 +96,12 @@ describe('parseInt', function() {
 
   it('throws if radix is not in [2 .. 36]', function() {
     throws(function() { S.parseInt(1, ''); },
-           errorEq(RangeError, 'Radix not in [2 .. 36]'));
+           RangeError,
+           'Radix not in [2 .. 36]');
 
     throws(function() { S.parseInt(37, ''); },
-           errorEq(RangeError, 'Radix not in [2 .. 36]'));
+           RangeError,
+           'Radix not in [2 .. 36]');
   });
 
   it('is not case-sensitive', function() {
@@ -152,6 +127,10 @@ describe('parseInt', function() {
     eq(S.parseInt(16, '+0XFF'), S.Just(255));
     eq(S.parseInt(16, '-0xFF'), S.Just(-255));
     eq(S.parseInt(16, '-0XFF'), S.Just(-255));
+  });
+
+  it('returns Nothing for empty string', function() {
+    eq(S.parseInt(10, ''), S.Nothing);
   });
 
   it('returns Nothing if one or more characters are invalid', function() {

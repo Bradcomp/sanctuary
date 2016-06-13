@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('lastIndexOf', function() {
@@ -13,20 +10,7 @@ describe('lastIndexOf', function() {
   it('is a binary function', function() {
     eq(typeof S.lastIndexOf, 'function');
     eq(S.lastIndexOf.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.lastIndexOf('x', null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'lastIndexOf :: a -> List a -> Maybe Integer\n' +
-                   '                    ^^^^^^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘List a’.\n'));
+    eq(S.lastIndexOf.toString(), 'lastIndexOf :: a -> List a -> Maybe Integer');
   });
 
   it('returns Nothing for an empty list', function() {

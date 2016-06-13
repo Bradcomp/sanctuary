@@ -12,6 +12,7 @@ describe('type', function() {
   it('is a unary function', function() {
     eq(typeof S.type, 'function');
     eq(S.type.length, 1);
+    eq(S.type.toString(), 'type :: Any -> String');
   });
 
   it('operates on values of built-in types', function() {

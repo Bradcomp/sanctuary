@@ -1,13 +1,11 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var R = require('ramda');
+var FL = require('fantasy-land');
+var Z = require('sanctuary-type-classes');
 
 var S = require('../..');
 
 var eq = require('../internal/eq');
-var errorEq = require('../internal/errorEq');
 
 
 describe('Just', function() {
@@ -20,199 +18,62 @@ describe('Just', function() {
     eq(S.Just(42).isJust, true);
   });
 
-  it('provides an "ap" method', function() {
-    eq(S.Just(S.inc).ap.length, 1);
-    eq(S.Just(S.inc).ap(S.Nothing), S.Nothing);
-    eq(S.Just(S.inc).ap(S.Just(42)), S.Just(43));
-
-    throws(function() { S.Just(S.inc).ap([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#ap :: Maybe Function -> Maybe a -> Maybe b\n' +
-                   '                              ^^^^^^^\n' +
-                   '                                 1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Maybe a’.\n'));
+  it('provides a "fantasy-land/alt" method', function() {
+    eq(S.Just(1)[FL.alt].length, 1);
+    eq(S.Just(1)[FL.alt](S.Nothing), S.Just(1));
+    eq(S.Just(1)[FL.alt](S.Just(2)), S.Just(1));
   });
 
-  it('provides a "chain" method', function() {
-    eq(S.Just([1, 2, 3]).chain.length, 1);
-    eq(S.Just([1, 2, 3]).chain(S.head), S.Just(1));
-
-    throws(function() { S.Just([1, 2, 3]).chain([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#chain :: Maybe a -> Function -> Maybe b\n' +
-                   '                          ^^^^^^^^\n' +
-                   '                             1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+  it('provides a "fantasy-land/ap" method', function() {
+    eq(S.Just(42)[FL.ap].length, 1);
+    eq(S.Just(42)[FL.ap](S.Nothing), S.Nothing);
+    eq(S.Just(42)[FL.ap](S.Just(S.inc)), S.Just(43));
   });
 
-  it('provides a "concat" method', function() {
-    eq(S.Just('foo').concat.length, 1);
-    eq(S.Just('foo').concat(S.Nothing), S.Just('foo'));
-    eq(S.Just('foo').concat(S.Just('bar')), S.Just('foobar'));
-
-    throws(function() { S.Just('foo').concat([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#concat :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                                          ^^^^^^^\n' +
-                   '                                             1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Maybe a’.\n'));
-
-    throws(function() { S.Just(1).concat(S.Just(0)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'Maybe#concat :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                ^^^^^^^^^^^          ^\n' +
-                   '                                     1\n' +
-                   '\n' +
-                   '1)  1 :: Number, FiniteNumber, NonZeroFiniteNumber, Integer, ValidNumber\n' +
-                   '\n' +
-                   '‘Maybe#concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
-
-    throws(function() { S.Just(2).concat(S.Just([1, 2, 3])); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'Maybe#concat :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                ^^^^^^^^^^^          ^\n' +
-                   '                                     1\n' +
-                   '\n' +
-                   '1)  2 :: Number, FiniteNumber, NonZeroFiniteNumber, Integer, ValidNumber\n' +
-                   '\n' +
-                   '‘Maybe#concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
-
-    throws(function() { S.Just([1, 2, 3]).concat(S.Just(3)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'Maybe#concat :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                ^^^^^^^^^^^                     ^\n' +
-                   '                                                1\n' +
-                   '\n' +
-                   '1)  3 :: Number, FiniteNumber, NonZeroFiniteNumber, Integer, ValidNumber\n' +
-                   '\n' +
-                   '‘Maybe#concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+  it('provides a "fantasy-land/chain" method', function() {
+    eq(S.Just([1, 2, 3])[FL.chain].length, 1);
+    eq(S.Just([1, 2, 3])[FL.chain](S.head), S.Just(1));
   });
 
-  it('provides an "equals" method', function() {
-    eq(S.Just(42).equals.length, 1);
-    eq(S.Just(42).equals(S.Just(42)), true);
-    eq(S.Just(42).equals(S.Just(43)), false);
-    eq(S.Just(42).equals(S.Nothing), false);
-    eq(S.Just(42).equals(null), false);
+  it('provides a "fantasy-land/concat" method', function() {
+    eq(S.Just('foo')[FL.concat].length, 1);
+    eq(S.Just('foo')[FL.concat](S.Nothing), S.Just('foo'));
+    eq(S.Just('foo')[FL.concat](S.Just('bar')), S.Just('foobar'));
+  });
+
+  it('provides a "fantasy-land/equals" method', function() {
+    eq(S.Just(42)[FL.equals].length, 1);
+    eq(S.Just(42)[FL.equals](S.Just(42)), true);
+    eq(S.Just(42)[FL.equals](S.Just(43)), false);
+    eq(S.Just(42)[FL.equals](S.Nothing), false);
 
     // Value-based equality:
-    eq(S.Just(0).equals(S.Just(-0)), false);
-    eq(S.Just(-0).equals(S.Just(0)), false);
-    eq(S.Just(NaN).equals(S.Just(NaN)), true);
-    eq(S.Just([1, 2, 3]).equals(S.Just([1, 2, 3])), true);
-    eq(S.Just(new Number(42)).equals(S.Just(new Number(42))), true);
-    eq(S.Just(new Number(42)).equals(42), false);
+    eq(S.Just(0)[FL.equals](S.Just(-0)), false);
+    eq(S.Just(-0)[FL.equals](S.Just(0)), false);
+    eq(S.Just(NaN)[FL.equals](S.Just(NaN)), true);
+    eq(S.Just([1, 2, 3])[FL.equals](S.Just([1, 2, 3])), true);
+    eq(S.Just(new Number(42))[FL.equals](S.Just(new Number(42))), true);
   });
 
-  it('provides an "extend" method', function() {
-    eq(S.Just(42).extend.length, 1);
-    eq(S.Just(42).extend(function(x) { return x.value / 2; }), S.Just(21));
+  it('provides a "fantasy-land/extend" method', function() {
+    eq(S.Just(42)[FL.extend].length, 1);
+    eq(S.Just(42)[FL.extend](function(x) { return x.value / 2; }), S.Just(21));
 
     // associativity
     var w = S.Just(42);
     var f = function(x) { return x.value + 1; };
     var g = function(x) { return x.value * x.value; };
-    eq(w.extend(g).extend(f), w.extend(function(_w) { return f(_w.extend(g)); }));
-
-    throws(function() { S.Just(42).extend(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#extend :: Maybe a -> Function -> Maybe a\n' +
-                   '                           ^^^^^^^^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(w[FL.extend](g)[FL.extend](f), w[FL.extend](function(_w) { return f(_w[FL.extend](g)); }));
   });
 
-  it('provides a "filter" method', function() {
-    eq(S.Just(42).filter.length, 1);
-    eq(S.Just(42).filter(R.T), S.Just(42));
-    eq(S.Just(42).filter(R.F), S.Nothing);
-    eq(S.Just(42).filter(function(n) { return n > 0; }), S.Just(42));
-    eq(S.Just(42).filter(function(n) { return n < 0; }), S.Nothing);
-
-    var m = S.Just(-5);
-    var f = function(n) { return n * n; };
-    var p = function(n) { return n < 0; };
-    var q = function(n) { return n > 0; };
-
-    eq(m.map(f).filter(p).equals(m.filter(function(x) { return p(f(x)); }).map(f)), true);
-    eq(m.map(f).filter(q).equals(m.filter(function(x) { return q(f(x)); }).map(f)), true);
-
-    throws(function() { S.Just(42).filter(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#filter :: Maybe a -> Function -> Maybe a\n' +
-                   '                           ^^^^^^^^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+  it('provides a "fantasy-land/map" method', function() {
+    eq(S.Just(42)[FL.map].length, 1);
+    eq(S.Just(42)[FL.map](function(x) { return x / 2; }), S.Just(21));
   });
 
-  it('provides a "map" method', function() {
-    eq(S.Just(42).map.length, 1);
-    eq(S.Just(42).map(function(x) { return x / 2; }), S.Just(21));
-
-    throws(function() { S.Just(42).map([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#map :: Maybe a -> Function -> Maybe b\n' +
-                   '                        ^^^^^^^^\n' +
-                   '                           1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
-  });
-
-  it('provides a "reduce" method', function() {
-    eq(S.Just(5).reduce.length, 2);
-    eq(S.Just(5).reduce(function(a, b) { return a + b; }, 10), 15);
-
-    throws(function() { S.Just(5).reduce(null, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#reduce :: Maybe a -> Function -> b -> b\n' +
-                   '                           ^^^^^^^^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
-  });
-
-  it('provides a "sequence" method', function() {
-    eq(S.Just(S.Right(42)).sequence.length, 1);
-    eq(S.Just(S.Right(42)).sequence(S.Either.of), S.Right(S.Just(42)));
+  it('provides a "fantasy-land/reduce" method', function() {
+    eq(S.Just(5)[FL.reduce].length, 2);
+    eq(S.Just(5)[FL.reduce](function(x, y) { return x - y; }, 42), 37);
   });
 
   it('provides a "toString" method', function() {
@@ -223,6 +84,16 @@ describe('Just', function() {
   it('provides an "inspect" method', function() {
     eq(S.Just([1, 2, 3]).inspect.length, 0);
     eq(S.Just([1, 2, 3]).inspect(), 'Just([1, 2, 3])');
+  });
+
+  it('provides aliases for unprefixed Fantasy Land methods', function() {
+    //  Only methods exposed in releases prior to v0.12.0 are aliased.
+    ['ap', 'chain', 'concat', 'equals', 'extend', 'map', 'reduce']
+    .forEach(function(name) {
+      var x = S.Just(42)[name];
+      eq(typeof x, 'function');
+      eq(x, S.Just(42)['fantasy-land/' + name]);
+    });
   });
 
   it('implements Semigroup', function() {
@@ -238,10 +109,10 @@ describe('Just', function() {
     var a = S.Just([1, 2, 3]);
 
     // left identity
-    eq(a.empty().concat(a).equals(a), true);
+    eq(Z.empty(a.constructor).concat(a).equals(a), true);
 
     // right identity
-    eq(a.concat(a.empty()).equals(a), true);
+    eq(a.concat(Z.empty(a.constructor)).equals(a), true);
   });
 
   it('implements Functor', function() {
@@ -262,13 +133,13 @@ describe('Just', function() {
     var c = S.Just(9);
 
     // composition
-    eq(a.map(function(f) {
+    eq(c.ap(b.ap(a.map(function(f) {
       return function(g) {
         return function(x) {
           return f(g(x));
         };
       };
-    }).ap(b).ap(c).equals(a.ap(b.ap(c))), true);
+    }))).equals(c.ap(b).ap(a)), true);
   });
 
   it('implements Applicative', function() {
@@ -278,13 +149,13 @@ describe('Just', function() {
     var x = 7;
 
     // identity
-    eq(a.of(S.I).ap(b).equals(b), true);
+    eq(b.ap(Z.of(a.constructor, S.I)).equals(b), true);
 
     // homomorphism
-    eq(a.of(f).ap(a.of(x)).equals(a.of(f(x))), true);
+    eq(Z.of(a.constructor, x).ap(Z.of(a.constructor, f)).equals(Z.of(a.constructor, f(x))), true);
 
     // interchange
-    eq(a.of(function(f) { return f(x); }).ap(b).equals(b.ap(a.of(x))), true);
+    eq(b.ap(Z.of(a.constructor, function(f) { return f(x); })).equals(Z.of(a.constructor, x).ap(b)), true);
   });
 
   it('implements Chain', function() {
@@ -302,10 +173,10 @@ describe('Just', function() {
     var x = [1, 2, 3];
 
     // left identity
-    eq(a.of(x).chain(f).equals(f(x)), true);
+    eq(Z.of(a.constructor, x).chain(f).equals(f(x)), true);
 
     // right identity
-    eq(a.chain(a.of).equals(a), true);
+    eq(a.chain(function(x) { return Z.of(a.constructor, x); }).equals(a), true);
   });
 
 });

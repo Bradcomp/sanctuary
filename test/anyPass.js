@@ -1,11 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('anyPass', function() {
@@ -13,20 +10,7 @@ describe('anyPass', function() {
   it('is a binary function', function() {
     eq(typeof S.anyPass, 'function');
     eq(S.anyPass.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.anyPass('wrong'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'anyPass :: Array Function -> a -> Boolean\n' +
-                   '           ^^^^^^^^^^^^^^\n' +
-                   '                 1\n' +
-                   '\n' +
-                   '1)  "wrong" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Array Function’.\n'));
+    eq(S.anyPass.toString(), 'anyPass :: Array (a -> Boolean) -> a -> Boolean');
   });
 
   it('returns false when given an empty array of predicates', function() {

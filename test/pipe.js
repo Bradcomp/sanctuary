@@ -10,6 +10,7 @@ describe('pipe', function() {
   it('is a binary function', function() {
     eq(typeof S.pipe, 'function');
     eq(S.pipe.length, 2);
+    eq(S.pipe.toString(), 'pipe :: Array Function -> a -> b');
   });
 
   it('composes a list of functions assumed to be unary', function() {

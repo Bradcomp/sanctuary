@@ -1,6 +1,6 @@
 'use strict';
 
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 var S = require('..');
 
@@ -12,11 +12,12 @@ describe('C', function() {
   it('is a ternary function', function() {
     eq(typeof S.C, 'function');
     eq(S.C.length, 3);
+    eq(S.C.toString(), 'C :: (a -> b -> c) -> b -> a -> c');
   });
 
   it('C(f, x, y) is equivalent to f(y)(x)', function() {
     eq(S.C(S.concat, 'foo', 'bar'), 'barfoo');
-    eq(R.map(S.C(S.concat, '!'), ['BAM', 'POW', 'KA-POW']), ['BAM!', 'POW!', 'KA-POW!']);
+    eq(Z.map(S.C(S.concat, '!'), ['BAM', 'POW', 'KA-POW']), ['BAM!', 'POW!', 'KA-POW!']);
   });
 
 });

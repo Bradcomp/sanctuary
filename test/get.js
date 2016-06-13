@@ -1,12 +1,10 @@
 'use strict';
 
-var throws = require('assert').throws;
 var vm = require('vm');
 
 var S = require('..');
 
 var eq = require('./internal/eq');
-var errorEq = require('./internal/errorEq');
 
 
 describe('get', function() {
@@ -14,44 +12,7 @@ describe('get', function() {
   it('is a ternary function', function() {
     eq(typeof S.get, 'function');
     eq(S.get.length, 3);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.get([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'get :: Accessible a => TypeRep -> String -> a -> Maybe b\n' +
-                   '                       ^^^^^^^\n' +
-                   '                          1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘TypeRep’.\n'));
-
-    throws(function() { S.get(Number, [1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'get :: Accessible a => TypeRep -> String -> a -> Maybe b\n' +
-                   '                                  ^^^^^^\n' +
-                   '                                    1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
-
-    throws(function() { S.get(Number, 'x', null); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'get :: Accessible a => TypeRep -> String -> a -> Maybe b\n' +
-                   '       ^^^^^^^^^^^^                         ^\n' +
-                   '                                            1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   '‘get’ requires ‘a’ to satisfy the Accessible type-class constraint; the value at position 1 does not.\n'));
+    eq(S.get.toString(), 'get :: Accessible a => TypeRep b -> String -> a -> Maybe b');
   });
 
   it('returns a Maybe', function() {
