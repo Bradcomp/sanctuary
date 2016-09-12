@@ -25,7 +25,7 @@
 //. Sanctuary gives us a fighting chance of avoiding such errors. We might
 //. write:
 //.
-//.     Z.map(S.toUpper, S.head(words))
+//.     S.map(S.toUpper, S.head(words))
 //.
 //. Sanctuary is designed to work in Node.js and in ES5-compatible browsers.
 //.
@@ -264,9 +264,13 @@
   var b = $.TypeVariable('b');
   var c = $.TypeVariable('c');
   var d = $.TypeVariable('d');
+  var e = $.UnaryTypeVariable('e');
   var f = $.UnaryTypeVariable('f');
   var l = $.TypeVariable('l');
   var r = $.TypeVariable('r');
+  var m = $.UnaryTypeVariable('m');
+  var p = $.BinaryTypeVariable('p');
+  var t = $.UnaryTypeVariable('t');
 
   //  $Either :: Type -> Type -> Type
   var $Either = $.BinaryType(
@@ -420,10 +424,10 @@
   //. The special [placeholder](#placeholder) value.
   //.
   //. ```javascript
-  //. > Z.map(S.concat('@'), ['foo', 'bar', 'baz'])
+  //. > S.map(S.concat('@'), ['foo', 'bar', 'baz'])
   //. ['@foo', '@bar', '@baz']
   //.
-  //. > Z.map(S.concat(S.__, '?'), ['foo', 'bar', 'baz'])
+  //. > S.map(S.concat(S.__, '?'), ['foo', 'bar', 'baz'])
   //. ['foo?', 'bar?', 'baz?']
   //. ```
   S.__ = $.__;
@@ -484,6 +488,303 @@
   }
   S.is = def('is', {}, [TypeRep(a), $.Any, $.Boolean], is);
 
+  //. ### Showable
+
+  //# toString :: Any -> String
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > S.toString(-0)
+  //. '-0'
+  //.
+  //. > S.toString({x: 1, y: 2, z: 3})
+  //. '{"x": 1, "y": 2, "z": 3}'
+  //.
+  //. > S.toString([S.Just('foo'), S.Just('bar'), S.Just('baz'), S.Nothing])
+  //. '[Just("foo"), Just("bar"), Just("baz"), Nothing]'
+  //. ```
+  S.toString =
+  def('toString',
+      {},
+      [$.Any, $.String],
+      Z.toString);
+
+  //. ### Fantasy Land
+  //.
+  //. Sanctuary is compatible with [version 2][FL:v2] of the
+  //. [Fantasy Land specification][FL].
+
+  //# equals :: a -> b -> Boolean
+  //.
+  //. TK
+  //.
+  //. ```javascript
+  //. > S.equals(0, -0)
+  //. false
+  //.
+  //. > S.equals(NaN, NaN)
+  //. true
+  //.
+  //. > S.equals(Just([1, 2, 3]), Just([1, 2, 3]))
+  //. true
+  //.
+  //. > S.equals(Just([1, 2, 3]), Just(['1', '2', '3']))
+  //. false
+  //. ```
+  S.equals =
+  def('equals',
+      {},
+      [a, b, $.Boolean],
+      Z.equals);
+
+  //# concat :: Semigroup a => a -> a -> a
+  //.
+  //. Concatenates two (homogeneous) arrays, two strings, or two values of any
+  //. other type which satisfies the [Semigroup][] specification.
+  //.
+  //. ```javascript
+  //. > S.concat([1, 2, 3], [4, 5, 6])
+  //. [1, 2, 3, 4, 5, 6]
+  //.
+  //. > S.concat('foo', 'bar')
+  //. 'foobar'
+  //.
+  //. > S.concat(S.Just('foo'), S.Just('bar'))
+  //. Just('foobar')
+  //. ```
+  S.concat =
+  def('concat',
+      {a: [Z.Semigroup]},
+      [a, a, a],
+      Z.concat);
+
+  //# empty :: Monoid a => TypeRep a -> a
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > S.empty(Array)
+  //. []
+  //.
+  //. > S.empty(Object)
+  //. {}
+  //.
+  //. > S.empty(String)
+  //. ''
+  //. ```
+  S.empty =
+  def('empty',
+      {a: [Z.Monoid]},
+      [TypeRep(a), a],
+      Z.empty);
+
+  //# map :: Functor f => (a -> b) -> f a -> f b
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > S.map(S.inc, [1, 2, 3])
+  //. [2, 3, 4]
+  //.
+  //. > S.map(S.inc, {x: 1, y: 2})
+  //. {x: 2, y: 3}
+  //.
+  //. > S.map(S.inc, Math.sqrt)(100)
+  //. 11
+  //.
+  //. > S.map(S.inc, S.Just(42))
+  //. Just(43)
+  //.
+  //. > S.map(S.inc, S.Right(42))
+  //. Right(43)
+  //. ```
+  S.map =
+  def('map',
+      {f: [Z.Functor]},
+      [Fn(a, b), f(a), f(b)],
+      Z.map);
+
+  //# bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > 'TK'
+  //. 'TK'
+  //. ```
+  S.bimap =
+  def('bimap',
+      {p: [Z.Bifunctor]},
+      [Fn(a, b), Fn(c, d), p(a, c), p(b, d)],
+      Z.bimap);
+
+  //# promap :: Profunctor p => (a -> b) -> (c -> d) -> p b c -> p a d
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > 'TK'
+  //. 'TK'
+  //. ```
+  S.promap =
+  def('promap',
+      {p: [Z.Profunctor]},
+      [Fn(a, b), Fn(c, d), p(b, c), p(a, d)],
+      Z.promap);
+
+  //# reduce_ :: Foldable f => ((a, b) -> a) -> a -> f b -> a
+  //.
+  //. Version of [`reduce`](#reduce) accepting uncurried functions.
+  S.reduce_ =
+  def('reduce_',
+      {f: [Z.Foldable]},
+      [$.Function([a, b, a]), a, f(b), a],
+      Z.reduce);
+
+  //# traverse :: (Applicative f, Traversable t) => (a -> f a) -> (b -> f c) -> t b -> f (t c)
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > S.traverse(S.Just, S.parseInt(16), ['A', 'B', 'C'])
+  //. Just([10, 11, 12])
+  //.
+  //. > S.traverse(S.Just, S.parseInt(16), ['A', 'B', 'C', 'X'])
+  //. Nothing
+  //. ```
+  S.traverse =
+  def('traverse',
+      {f: [Z.Applicative], t: [Z.Traversable]},
+      [Fn(a, f(a)), Fn(b, f(c)), t(b), f(t(c))],
+      Z.traverse);
+
+  //# sequence :: (Applicative f, Traversable t) => (a -> f a) -> t (f b) -> f (t b)
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > 'TK'
+  //. 'TK'
+  //. ```
+  S.sequence =
+  def('sequence',
+      {f: [Z.Applicative], t: [Z.Traversable]},
+      [Fn(a, f(a)), t(f(b)), f(t(b))],
+      Z.sequence);
+
+  //# ap :: Apply f => f (a -> b) -> f a -> f b
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > S.ap([Math.sqrt, S.inc], [1, 4, 9, 16, 25])
+  //. [1, 2, 3, 4, 5, 2, 5, 10, 17, 26]
+  //.
+  //. > S.ap(S.Just(S.inc), S.Just(42))
+  //. Just(43)
+  //. ```
+  S.ap =
+  def('ap',
+      {f: [Z.Apply]},
+      [f(Fn(a, b)), f(a), f(b)],
+      Z.ap);
+
+  //# of :: Applicative f => TypeRep f -> a -> f a
+  //.
+  //. TK.
+  S.of =
+  def('of',
+      {f: [Z.Applicative]},
+      [TypeRep($.TypeVariable('f')), a, f(a)],
+      Z.of);
+
+  //# chain :: Chain m => (a -> m b) -> m a -> m b
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > S.chain(x => [x, x], [1, 2, 3])
+  //. [1, 1, 2, 2, 3, 3]
+  //.
+  //. > S.chain(S.parseInt(10), S.Just('42'))
+  //. Just(42)
+  //. ```
+  S.chain =
+  def('chain',
+      {m: [Z.Chain]},
+      [Fn(a, m(b)), m(a), m(b)],
+      Z.chain);
+
+  //# chainRec :: (a -> Either a b) -> a -> b
+  //.
+  //. TK.
+  //.
+  //. ```javascript
+  //. > 'TK'
+  //. 'TK'
+  //. ```
+  S.chainRec =
+  def('chainRec',
+      {},
+      [Fn(a, $Either(a, b)), a, b],
+      function(f, x) {
+        var e = Left(x);
+        while (e.isLeft) e = f(e.value);
+        return e.value;
+      });
+
+  //# extend :: Extend e => (e a -> a) -> e a -> e a
+  //.
+  //. TK.
+  S.extend =
+  def('extend',
+      {e: [Z.Extend]},
+      [Fn(e(a), a), e(a), e(a)],
+      Z.extend);
+
+  //# extract :: Extend e => e a -> a
+  //.
+  //. TK.
+  S.extract =
+  def('extract',
+      {e: [Z.Extend]},
+      [e(a), a],
+      Z.extract);
+
+  //# filter :: (Applicative f, Foldable f, Monoid (f a)) => (a -> Boolean) -> f a -> f a
+  //.
+  //. TK.
+  //.
+  //. See also [`filterM`](#filterM).
+  //.
+  //. ```javascript
+  //. > S.filter(S.odd, [1, 2, 3, 4, 5])
+  //. [1, 3, 5]
+  //.
+  //. > S.filter(S.odd, S.Just(9))
+  //. Just(9)
+  //.
+  //. > S.filter(S.odd, S.Just(4))
+  //. Nothing
+  //. ```
+  S.filter =
+  def('filter',
+      {f: [Z.Applicative, Z.Foldable, Z.Monoid]},
+      [Fn(a, $.Boolean), f(a), f(a)],
+      Z.filter);
+
+  //# filterM :: (Monad m, Monoid (m a)) => (a -> Boolean) -> m a -> m a
+  //.
+  //. TK.
+  //.
+  //. See also [`filter`](#filter).
+  S.filterM =
+  def('filterM',
+      {m: [Z.Monad, Z.Monoid]},
+      [Fn(a, $.Boolean), m(a), m(a)],
+      Z.filterM);
+
   //. ### Combinator
 
   //# I :: a -> a
@@ -509,7 +810,7 @@
   //. > S.K('foo', 'bar')
   //. 'foo'
   //.
-  //. > Z.map(S.K(42), S.range(0, 5))
+  //. > S.map(S.K(42), S.range(0, 5))
   //. [42, 42, 42, 42, 42]
   //. ```
   function K(x, y) {
@@ -527,7 +828,7 @@
   //. > S.A(S.inc, 42)
   //. 43
   //.
-  //. > Z.map(S.A(S.__, 100), [S.inc, Math.sqrt])
+  //. > S.map(S.A(S.__, 100), [S.inc, Math.sqrt])
   //. [101, 10]
   //. ```
   function A(f, x) {
@@ -545,7 +846,7 @@
   //. > S.T(42, S.inc)
   //. 43
   //.
-  //. > Z.map(S.T(100), [S.inc, Math.sqrt])
+  //. > S.map(S.T(100), [S.inc, Math.sqrt])
   //. [101, 10]
   //. ```
   function T(x, f) {
@@ -567,7 +868,7 @@
   //. > S.C(S.concat, 'foo', 'bar')
   //. 'barfoo'
   //.
-  //. > Z.map(S.C(S.concat, '?'), ['foo', 'bar', 'baz'])
+  //. > S.map(S.C(S.concat, '?'), ['foo', 'bar', 'baz'])
   //. ['foo?', 'bar?', 'baz?']
   //. ```
   function C(f, x, y) {
@@ -618,7 +919,7 @@
   //. See also [`C`](#C).
   //.
   //. ```javascript
-  //. > Z.map(S.flip(Math.pow)(2), [1, 2, 3, 4, 5])
+  //. > S.map(S.flip(Math.pow)(2), [1, 2, 3, 4, 5])
   //. [1, 4, 9, 16, 25]
   //. ```
   function flip(f, x, y) {
@@ -767,7 +1068,7 @@
   //. Returns Nothing.
   //.
   //. ```javascript
-  //. > Z.empty(S.Maybe)
+  //. > S.empty(S.Maybe)
   //. Nothing
   //. ```
   Maybe['fantasy-land/empty'] = function() { return Nothing; };
@@ -777,7 +1078,7 @@
   //. Takes a value of any type and returns a Just with the given value.
   //.
   //. ```javascript
-  //. > Z.of(S.Maybe, 42)
+  //. > S.of(S.Maybe, 42)
   //. Just(42)
   //. ```
   Maybe['fantasy-land/of'] = Just;
@@ -816,10 +1117,10 @@
   //. Returns the string representation of the Maybe.
   //.
   //. ```javascript
-  //. > Z.toString(S.Nothing)
+  //. > S.toString(S.Nothing)
   //. 'Nothing'
   //.
-  //. > Z.toString(S.Just([1, 2, 3]))
+  //. > S.toString(S.Just([1, 2, 3]))
   //. 'Just([1, 2, 3])'
   //. ```
   Maybe.prototype.toString = function() {
@@ -849,22 +1150,22 @@
   //.   - it is Nothing and `this` is Nothing; or
   //.
   //.   - it is a Just and `this` is a Just, and their values are equal
-  //.     according to [`Z.equals`][Z.equals].
+  //.     according to [`equals`](#equals).
   //.
   //. ```javascript
-  //. > Z.equals(S.Nothing, S.Nothing)
+  //. > S.equals(S.Nothing, S.Nothing)
   //. true
   //.
-  //. > Z.equals(S.Nothing, null)
+  //. > S.equals(S.Nothing, null)
   //. false
   //.
-  //. > Z.equals(S.Just([1, 2, 3]), S.Just([1, 2, 3]))
+  //. > S.equals(S.Just([1, 2, 3]), S.Just([1, 2, 3]))
   //. true
   //.
-  //. > Z.equals(S.Just([1, 2, 3]), S.Just([3, 2, 1]))
+  //. > S.equals(S.Just([1, 2, 3]), S.Just([3, 2, 1]))
   //. false
   //.
-  //. > Z.equals(S.Just([1, 2, 3]), S.Nothing)
+  //. > S.equals(S.Just([1, 2, 3]), S.Nothing)
   //. false
   //. ```
   Maybe.prototype['fantasy-land/equals'] = function(other) {
@@ -913,10 +1214,10 @@
   //. to this Just's value.
   //.
   //. ```javascript
-  //. > Z.map(Math.sqrt, S.Nothing)
+  //. > S.map(Math.sqrt, S.Nothing)
   //. Nothing
   //.
-  //. > Z.map(Math.sqrt, S.Just(9))
+  //. > S.map(Math.sqrt, S.Just(9))
   //. Just(3)
   //. ```
   Maybe.prototype['fantasy-land/map'] = function(f) {
@@ -930,16 +1231,16 @@
   //. the result of applying the given Just's value to this Just's value.
   //.
   //. ```javascript
-  //. > Z.ap(S.Nothing, S.Nothing)
+  //. > S.ap(S.Nothing, S.Nothing)
   //. Nothing
   //.
-  //. > Z.ap(S.Nothing, S.Just(9))
+  //. > S.ap(S.Nothing, S.Just(9))
   //. Nothing
   //.
-  //. > Z.ap(S.Just(Math.sqrt), S.Nothing)
+  //. > S.ap(S.Just(Math.sqrt), S.Nothing)
   //. Nothing
   //.
-  //. > Z.ap(S.Just(Math.sqrt), S.Just(9))
+  //. > S.ap(S.Just(Math.sqrt), S.Just(9))
   //. Just(3)
   //. ```
   Maybe.prototype['fantasy-land/ap'] = function(other) {
@@ -952,13 +1253,13 @@
   //. it returns the result of applying the function to this Just's value.
   //.
   //. ```javascript
-  //. > Z.chain(S.parseFloat, S.Nothing)
+  //. > S.chain(S.parseFloat, S.Nothing)
   //. Nothing
   //.
-  //. > Z.chain(S.parseFloat, S.Just('xxx'))
+  //. > S.chain(S.parseFloat, S.Just('xxx'))
   //. Nothing
   //.
-  //. > Z.chain(S.parseFloat, S.Just('12.34'))
+  //. > S.chain(S.parseFloat, S.Just('12.34'))
   //. Just(12.34)
   //. ```
   Maybe.prototype['fantasy-land/chain'] = function(f) {
@@ -997,10 +1298,10 @@
   //. TK.
   //.
   //. ```javascript
-  //. > Z.traverse(x => [x], x => [x, x], S.Just(7))
+  //. > S.traverse(x => [x], x => [x, x], S.Just(7))
   //. [Just(7), Just(7)]
   //.
-  //. > Z.traverse(x => [x], x => [x, x], S.Nothing)
+  //. > S.traverse(x => [x], x => [x, x], S.Nothing)
   //. [Nothing]
   //. ```
   Maybe.prototype['fantasy-land/traverse'] = function(f, of) {
@@ -1014,10 +1315,10 @@
   //. to `this`.
   //.
   //. ```javascript
-  //. > Z.extend(x => x.value + 1, S.Nothing)
+  //. > S.extend(x => x.value + 1, S.Nothing)
   //. Nothing
   //.
-  //. > Z.extend(x => x.value + 1, S.Just(42))
+  //. > S.extend(x => x.value + 1, S.Just(42))
   //. Just(43)
   //. ```
   Maybe.prototype['fantasy-land/extend'] = function(f) {
@@ -1319,7 +1620,7 @@
   //. Takes a value of any type and returns a Right with the given value.
   //.
   //. ```javascript
-  //. > Z.of(S.Either, 42)
+  //. > S.of(S.Either, 42)
   //. Right(42)
   //. ```
   Either['fantasy-land/of'] = Right;
@@ -1358,10 +1659,10 @@
   //. Returns the string representation of the Either.
   //.
   //. ```javascript
-  //. > Z.toString(S.Left('Cannot divide by zero'))
+  //. > S.toString(S.Left('Cannot divide by zero'))
   //. 'Left("Cannot divide by zero")'
   //.
-  //. > Z.toString(S.Right([1, 2, 3]))
+  //. > S.toString(S.Right([1, 2, 3]))
   //. 'Right([1, 2, 3])'
   //. ```
   Either.prototype.toString = function() {
@@ -1390,19 +1691,19 @@
   //. Takes a value of the same type and returns `true` if:
   //.
   //.   - it is a Left and `this` is a Left, and their values are equal
-  //.     according to [`Z.equals`][Z.equals]; or
+  //.     according to [`equals`](#equals); or
   //.
   //.   - it is a Right and `this` is a Right, and their values are equal
-  //.     according to [`Z.equals`][Z.equals].
+  //.     according to [`equals`](#equals).
   //.
   //. ```javascript
-  //. > Z.equals(S.Right([1, 2, 3]), S.Right([1, 2, 3]))
+  //. > S.equals(S.Right([1, 2, 3]), S.Right([1, 2, 3]))
   //. true
   //.
-  //. > Z.equals(S.Right([1, 2, 3]), S.Left([1, 2, 3]))
+  //. > S.equals(S.Right([1, 2, 3]), S.Left([1, 2, 3]))
   //. false
   //.
-  //. > Z.equals(S.Right(42), 42)
+  //. > S.equals(S.Right(42), 42)
   //. false
   //. ```
   Either.prototype['fantasy-land/equals'] = function(other) {
@@ -1451,10 +1752,10 @@
   //. this Right's value.
   //.
   //. ```javascript
-  //. > Z.map(Math.sqrt, S.Left('Cannot divide by zero'))
+  //. > S.map(Math.sqrt, S.Left('Cannot divide by zero'))
   //. Left('Cannot divide by zero')
   //.
-  //. > Z.map(Math.sqrt, S.Right(9))
+  //. > S.map(Math.sqrt, S.Right(9))
   //. Right(3)
   //. ```
   Either.prototype['fantasy-land/map'] = function(f) {
@@ -1468,16 +1769,16 @@
   //. the result of applying the given Right's value to this Right's value.
   //.
   //. ```javascript
-  //. > Z.ap(S.Left('No such function'), S.Left('Cannot divide by zero'))
+  //. > S.ap(S.Left('No such function'), S.Left('Cannot divide by zero'))
   //. Left('No such function')
   //.
-  //. > Z.ap(S.Left('No such function'), S.Right(9))
+  //. > S.ap(S.Left('No such function'), S.Right(9))
   //. Left('No such function')
   //.
-  //. > Z.ap(S.Right(Math.sqrt), S.Left('Cannot divide by zero'))
+  //. > S.ap(S.Right(Math.sqrt), S.Left('Cannot divide by zero'))
   //. Left('Cannot divide by zero')
   //.
-  //. > Z.ap(S.Right(Math.sqrt), S.Right(9))
+  //. > S.ap(S.Right(Math.sqrt), S.Right(9))
   //. Right(3)
   //. ```
   Either.prototype['fantasy-land/ap'] = function(other) {
@@ -1495,13 +1796,13 @@
   //. .         : S.Right(Math.sqrt(n))
   //. sqrt
   //.
-  //. > Z.chain(sqrt, S.Left('Cannot divide by zero'))
+  //. > S.chain(sqrt, S.Left('Cannot divide by zero'))
   //. Left('Cannot divide by zero')
   //.
-  //. > Z.chain(sqrt, S.Right(-1))
+  //. > S.chain(sqrt, S.Right(-1))
   //. Left('Cannot represent square root of negative number')
   //.
-  //. > Z.chain(sqrt, S.Right(25))
+  //. > S.chain(sqrt, S.Right(25))
   //. Right(5)
   //. ```
   Either.prototype['fantasy-land/chain'] = function(f) {
@@ -1557,10 +1858,10 @@
   //. `this`.
   //.
   //. ```javascript
-  //. > Z.extend(x => x.value + 1, S.Left('Cannot divide by zero'))
+  //. > S.extend(x => x.value + 1, S.Left('Cannot divide by zero'))
   //. Left('Cannot divide by zero')
   //.
-  //. > Z.extend(x => x.value + 1, S.Right(42))
+  //. > S.extend(x => x.value + 1, S.Right(42))
   //. Right(43)
   //. ```
   Either.prototype['fantasy-land/extend'] = function(f) {
@@ -1629,11 +1930,11 @@
   //. > S.toEither('XYZ', 'ABC')
   //. Right('ABC')
   //.
-  //. > Z.map(m => m[0], S.toEither('Invalid protocol', 'ftp://example.com/'.match(/^https?:/)))
+  //. > S.toEither('Invalid protocol', 'ftp://example.com/'.match(/^https?:/))
   //. Left('Invalid protocol')
   //.
-  //. > Z.map(m => m[0], S.toEither('Invalid protocol', 'https://example.com/'.match(/^https?:/)))
-  //. Right('https:')
+  //. > S.toEither('Invalid protocol', 'https://example.com/'.match(/^https?:/))
+  //. Right(['https:'])
   //. ```
   function toEither(x, y) {
     return y == null ? Left(x) : Right(y);
@@ -1648,10 +1949,10 @@
   //. Right's value, if the Either is a Right.
   //.
   //. ```javascript
-  //. > S.either(S.toUpper, Z.toString, S.Left('Cannot divide by zero'))
+  //. > S.either(S.toUpper, S.toString, S.Left('Cannot divide by zero'))
   //. 'CANNOT DIVIDE BY ZERO'
   //.
-  //. > S.either(S.toUpper, Z.toString, S.Right(42))
+  //. > S.either(S.toUpper, S.toString, S.Right(42))
   //. '42'
   //. ```
   function either(l, r, either) {
@@ -3182,6 +3483,8 @@
 //. [Apply]:            https://github.com/fantasyland/fantasy-land#apply
 //. [BinaryType]:       https://github.com/sanctuary-js/sanctuary-def#BinaryType
 //. [Extend]:           https://github.com/fantasyland/fantasy-land#extend
+//. [FL]:               https://github.com/fantasyland/fantasy-land
+//. [FL:v2]:            https://github.com/fantasyland/fantasy-land/tree/2.0.0
 //. [Foldable]:         https://github.com/fantasyland/fantasy-land#foldable
 //. [Functor]:          https://github.com/fantasyland/fantasy-land#functor
 //. [Monad]:            https://github.com/fantasyland/fantasy-land#monad
