@@ -1,7 +1,7 @@
 'use strict';
 
 var jsc = require('jsverify');
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 var S = require('../internal/sanctuary');
 
@@ -27,12 +27,12 @@ var EitherArb = function(lArb, rArb) {
 
 //  LeftArb :: Arbitrary a -> Arbitrary (Either a b)
 var LeftArb = function(arb) {
-  return arb.smap(S.Left, function(e) { return e.value; }, R.toString);
+  return arb.smap(S.Left, function(e) { return e.value; }, Z.toString);
 };
 
 //  RightArb :: Arbitrary a -> Arbitrary (Either b a)
 var RightArb = function(arb) {
-  return arb.smap(S.Right, function(e) { return e.value; }, R.toString);
+  return arb.smap(S.Right, function(e) { return e.value; }, Z.toString);
 };
 
 describe('Either', function() {
@@ -47,28 +47,26 @@ describe('Either', function() {
 
     it('satisfies naturality', function() {
       jsc.assert(jsc.forall(EitherArb(jsc.integer, IdentityArb(jsc.string)), function(either) {
-        var lhs = identityToMaybe(either.sequence(Identity.of));
-        var rhs = either.map(identityToMaybe).sequence(S.Maybe.of);
-        return lhs.equals(rhs);
+        var lhs = identityToMaybe(either.sequence(Identity));
+        var rhs = Z.map(identityToMaybe, either).sequence(S.Just);
+        return Z.equals(lhs, rhs);
       }));
     });
 
     it('satisfies identity', function() {
       jsc.assert(jsc.forall(EitherArb(jsc.integer, jsc.string), function(either) {
-        var lhs = either.map(Identity).sequence(Identity.of);
-        var rhs = Identity.of(either);
-        return lhs.equals(rhs);
+        var lhs = Z.map(Identity, either).sequence(Identity);
+        var rhs = Identity(either);
+        return Z.equals(lhs, rhs);
       }));
     });
 
     it('satisfies composition', function() {
       jsc.assert(jsc.forall(EitherArb(jsc.string, IdentityArb(EitherArb(jsc.string, jsc.integer))), function(u) {
         var C = Compose(Identity)(S.Either);
-        var lhs = u.map(C).sequence(C.of);
-        var rhs = C(u.sequence(Identity.of).map(function(x) {
-          return x.sequence(S.Either.of);
-        }));
-        return lhs.equals(rhs);
+        var lhs = Z.map(C, u).sequence(function(x) { return Z.of(C, x); });
+        var rhs = C(Z.map(function(x) { return x.sequence(S.Right); }, u.sequence(Identity)));
+        return Z.equals(lhs, rhs);
       }));
     });
 

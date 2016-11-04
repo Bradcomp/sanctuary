@@ -1,5 +1,7 @@
 'use strict';
 
+var Z = require('sanctuary-type-classes');
+
 var S = require('../..');
 
 var eq = require('../internal/eq');
@@ -20,27 +22,23 @@ describe('Left', function() {
 
   it('provides an "ap" method', function() {
     eq(S.Left('abc').ap.length, 1);
-    eq(S.Left('abc').ap.toString(), 'Either#ap :: Either a (b -> c) ~> Either a b -> Either a c');
-    eq(S.Left('abc').ap(S.Left('xyz')), S.Left('abc'));
-    eq(S.Left('abc').ap(S.Right(42)), S.Left('abc'));
+    eq(S.Left('abc').ap(S.Left('xyz')), S.Left('xyz'));
+    eq(S.Left('abc').ap(S.Right(S.inc)), S.Left('abc'));
   });
 
   it('provides a "chain" method', function() {
     eq(S.Left('abc').chain.length, 1);
-    eq(S.Left('abc').chain.toString(), 'Either#chain :: Either a b ~> (b -> Either a c) -> Either a c');
     eq(S.Left('abc').chain(squareRoot), S.Left('abc'));
   });
 
   it('provides a "concat" method', function() {
     eq(S.Left('abc').concat.length, 1);
-    eq(S.Left('abc').concat.toString(), 'Either#concat :: (Semigroup a, Semigroup b) => Either a b ~> Either a b -> Either a b');
     eq(S.Left('abc').concat(S.Left('def')), S.Left('abcdef'));
     eq(S.Left('abc').concat(S.Right('xyz')), S.Right('xyz'));
   });
 
   it('provides an "equals" method', function() {
     eq(S.Left(42).equals.length, 1);
-    eq(S.Left(42).equals.toString(), 'Either#equals :: Either a b ~> c -> Boolean');
     eq(S.Left(42).equals(S.Left(42)), true);
     eq(S.Left(42).equals(S.Left('42')), false);
     eq(S.Left(42).equals(S.Right(42)), false);
@@ -57,7 +55,6 @@ describe('Left', function() {
 
   it('provides an "extend" method', function() {
     eq(S.Left('abc').extend.length, 1);
-    eq(S.Left('abc').extend.toString(), 'Either#extend :: Either a b ~> (Either a b -> b) -> Either a b');
     eq(S.Left('abc').extend(function(x) { return x / 2; }), S.Left('abc'));
 
     // associativity
@@ -69,31 +66,26 @@ describe('Left', function() {
 
   it('provides a "map" method', function() {
     eq(S.Left('abc').map.length, 1);
-    eq(S.Left('abc').map.toString(), 'Either#map :: Either a b ~> (b -> c) -> Either a c');
     eq(S.Left('abc').map(square), S.Left('abc'));
   });
 
   it('provides a "reduce" method', function() {
     eq(S.Left('abc').reduce.length, 2);
-    eq(S.Left('abc').reduce.toString(), 'Either#reduce :: Either a b ~> ((c, b) -> c) -> c -> c');
     eq(S.Left('abc').reduce(function(x, y) { return x - y; }, 42), 42);
   });
 
   it('provides a "sequence" method', function() {
     eq(S.Left('abc').sequence.length, 1);
-    eq(S.Left('abc').sequence.toString(), 'Either#sequence :: Applicative f => Either a (f b) ~> (b -> f b) -> f (Either a b)');
-    eq(S.Left('abc').sequence(S.Maybe.of), S.Just(S.Left('abc')));
+    eq(S.Left('abc').sequence(S.Just), S.Just(S.Left('abc')));
   });
 
   it('provides a "toBoolean" method', function() {
     eq(S.Left('abc').toBoolean.length, 0);
-    eq(S.Left('abc').toBoolean.toString(), 'Either#toBoolean :: Either a b ~> () -> Boolean');
     eq(S.Left('abc').toBoolean(), false);
   });
 
   it('provides a "toString" method', function() {
     eq(S.Left('abc').toString.length, 0);
-    eq(S.Left('abc').toString.toString(), 'Either#toString :: Either a b ~> () -> String');
     eq(S.Left('abc').toString(), 'Left("abc")');
   });
 
@@ -145,13 +137,13 @@ describe('Left', function() {
     var x = 7;
 
     // identity
-    eq(a.of(S.I).ap(b).equals(b), true);
+    eq(b.ap(Z.of(a.constructor, S.I)).equals(b), true);
 
     // homomorphism
-    eq(a.of(f).ap(a.of(x)).equals(a.of(f(x))), true);
+    eq(Z.of(a.constructor, x).ap(Z.of(a.constructor, f)).equals(Z.of(a.constructor, f(x))), true);
 
     // interchange
-    eq(a.of(function(f) { return f(x); }).ap(b).equals(b.ap(a.of(x))), true);
+    eq(b.ap(Z.of(a.constructor, function(f) { return f(x); })).equals(Z.of(a.constructor, x).ap(b)), true);
   });
 
   it('implements Chain', function() {
@@ -169,10 +161,10 @@ describe('Left', function() {
     var x = 25;
 
     // left identity
-    eq(a.of(x).chain(f).equals(f(x)), true);
+    eq(Z.of(a.constructor, x).chain(f).equals(f(x)), true);
 
     // right identity
-    eq(a.chain(a.of).equals(a), true);
+    eq(a.chain(function(x) { return Z.of(a.constructor, x); }).equals(a), true);
   });
 
 });

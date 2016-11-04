@@ -1,6 +1,6 @@
 'use strict';
 
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 var S = require('../..');
 
@@ -19,28 +19,24 @@ describe('Just', function() {
   });
 
   it('provides an "ap" method', function() {
-    eq(S.Just(S.inc).ap.length, 1);
-    eq(S.Just(S.inc).ap.toString(), 'Maybe#ap :: Maybe (a -> b) ~> Maybe a -> Maybe b');
-    eq(S.Just(S.inc).ap(S.Nothing), S.Nothing);
-    eq(S.Just(S.inc).ap(S.Just(42)), S.Just(43));
+    eq(S.Just(42).ap.length, 1);
+    eq(S.Just(42).ap(S.Nothing), S.Nothing);
+    eq(S.Just(42).ap(S.Just(S.inc)), S.Just(43));
   });
 
   it('provides a "chain" method', function() {
     eq(S.Just([1, 2, 3]).chain.length, 1);
-    eq(S.Just([1, 2, 3]).chain.toString(), 'Maybe#chain :: Maybe a ~> (a -> Maybe b) -> Maybe b');
     eq(S.Just([1, 2, 3]).chain(S.head), S.Just(1));
   });
 
   it('provides a "concat" method', function() {
     eq(S.Just('foo').concat.length, 1);
-    eq(S.Just('foo').concat.toString(), 'Maybe#concat :: Semigroup a => Maybe a ~> Maybe a -> Maybe a');
     eq(S.Just('foo').concat(S.Nothing), S.Just('foo'));
     eq(S.Just('foo').concat(S.Just('bar')), S.Just('foobar'));
   });
 
   it('provides an "equals" method', function() {
     eq(S.Just(42).equals.length, 1);
-    eq(S.Just(42).equals.toString(), 'Maybe#equals :: Maybe a ~> b -> Boolean');
     eq(S.Just(42).equals(S.Just(42)), true);
     eq(S.Just(42).equals(S.Just(43)), false);
     eq(S.Just(42).equals(S.Nothing), false);
@@ -57,7 +53,6 @@ describe('Just', function() {
 
   it('provides an "extend" method', function() {
     eq(S.Just(42).extend.length, 1);
-    eq(S.Just(42).extend.toString(), 'Maybe#extend :: Maybe a ~> (Maybe a -> a) -> Maybe a');
     eq(S.Just(42).extend(function(x) { return x.value / 2; }), S.Just(21));
 
     // associativity
@@ -69,9 +64,8 @@ describe('Just', function() {
 
   it('provides a "filter" method', function() {
     eq(S.Just(42).filter.length, 1);
-    eq(S.Just(42).filter.toString(), 'Maybe#filter :: Maybe a ~> (a -> Boolean) -> Maybe a');
-    eq(S.Just(42).filter(R.T), S.Just(42));
-    eq(S.Just(42).filter(R.F), S.Nothing);
+    eq(S.Just(42).filter(S.K(true)), S.Just(42));
+    eq(S.Just(42).filter(S.K(false)), S.Nothing);
     eq(S.Just(42).filter(function(n) { return n > 0; }), S.Just(42));
     eq(S.Just(42).filter(function(n) { return n < 0; }), S.Nothing);
 
@@ -86,31 +80,26 @@ describe('Just', function() {
 
   it('provides a "map" method', function() {
     eq(S.Just(42).map.length, 1);
-    eq(S.Just(42).map.toString(), 'Maybe#map :: Maybe a ~> (a -> b) -> Maybe b');
     eq(S.Just(42).map(function(x) { return x / 2; }), S.Just(21));
   });
 
   it('provides a "reduce" method', function() {
     eq(S.Just(5).reduce.length, 2);
-    eq(S.Just(5).reduce.toString(), 'Maybe#reduce :: Maybe a ~> ((b, a) -> b) -> b -> b');
     eq(S.Just(5).reduce(function(x, y) { return x - y; }, 42), 37);
   });
 
   it('provides a "sequence" method', function() {
     eq(S.Just(S.Right(42)).sequence.length, 1);
-    eq(S.Just(S.Right(42)).sequence.toString(), 'Maybe#sequence :: Applicative f => Maybe (f a) ~> (a -> f a) -> f (Maybe a)');
     eq(S.Just(S.Right(42)).sequence(S.Either.of), S.Right(S.Just(42)));
   });
 
   it('provides a "toBoolean" method', function() {
     eq(S.Just(42).toBoolean.length, 0);
-    eq(S.Just(42).toBoolean.toString(), 'Maybe#toBoolean :: Maybe a ~> () -> Boolean');
     eq(S.Just(42).toBoolean(), true);
   });
 
   it('provides a "toString" method', function() {
     eq(S.Just([1, 2, 3]).toString.length, 0);
-    eq(S.Just([1, 2, 3]).toString.toString(), 'Maybe#toString :: Maybe a ~> () -> String');
     eq(S.Just([1, 2, 3]).toString(), 'Just([1, 2, 3])');
   });
 
@@ -132,10 +121,10 @@ describe('Just', function() {
     var a = S.Just([1, 2, 3]);
 
     // left identity
-    eq(a.empty().concat(a).equals(a), true);
+    eq(Z.empty(a.constructor).concat(a).equals(a), true);
 
     // right identity
-    eq(a.concat(a.empty()).equals(a), true);
+    eq(a.concat(Z.empty(a.constructor)).equals(a), true);
   });
 
   it('implements Functor', function() {
@@ -156,13 +145,13 @@ describe('Just', function() {
     var c = S.Just(7);
 
     // composition
-    eq(a.map(function(f) {
+    eq(c.ap(b.ap(a.map(function(f) {
       return function(g) {
         return function(x) {
           return f(g(x));
         };
       };
-    }).ap(b).ap(c).equals(a.ap(b.ap(c))), true);
+    }))).equals(c.ap(b).ap(a)), true);
   });
 
   it('implements Applicative', function() {
@@ -172,13 +161,13 @@ describe('Just', function() {
     var x = 7;
 
     // identity
-    eq(a.of(S.I).ap(b).equals(b), true);
+    eq(b.ap(Z.of(a.constructor, S.I)).equals(b), true);
 
     // homomorphism
-    eq(a.of(f).ap(a.of(x)).equals(a.of(f(x))), true);
+    eq(Z.of(a.constructor, x).ap(Z.of(a.constructor, f)).equals(Z.of(a.constructor, f(x))), true);
 
     // interchange
-    eq(a.of(function(f) { return f(x); }).ap(b).equals(b.ap(a.of(x))), true);
+    eq(b.ap(Z.of(a.constructor, function(f) { return f(x); })).equals(Z.of(a.constructor, x).ap(b)), true);
   });
 
   it('implements Chain', function() {
@@ -196,10 +185,10 @@ describe('Just', function() {
     var x = [1, 2, 3];
 
     // left identity
-    eq(a.of(x).chain(f).equals(f(x)), true);
+    eq(Z.of(a.constructor, x).chain(f).equals(f(x)), true);
 
     // right identity
-    eq(a.chain(a.of).equals(a), true);
+    eq(a.chain(function(x) { return Z.of(a.constructor, x); }).equals(a), true);
   });
 
 });

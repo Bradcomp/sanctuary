@@ -1,27 +1,29 @@
 'use strict';
 
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 
 //  Identity :: a -> Identity a
 var Identity = function Identity(x) {
   return {
     '@@type': 'sanctuary/Identity',
-    of: Identity,
-    map: function(fn) {
+    'fantasy-land/of': Identity,
+    'fantasy-land/map': function(fn) {
       return Identity(fn(x));
     },
-    ap: function(y) {
+    'fantasy-land/ap': function(y) {
       return Identity(x(y));
     },
-    equals: function(other) {
-      return R.equals(x, other.value);
+    'fantasy-land/equals': function(other) {
+      return Z.equals(x, other.value);
     },
-    toString: function() { return 'Identity(' + R.toString(x) + ')'; },
+    constructor: Identity,
+    inspect: function() { return this.toString(); },
+    toString: function() { return 'Identity(' + Z.toString(x) + ')'; },
     value: x
   };
 };
 
-Identity.of = Identity;
+Identity['fantasy-land/of'] = Identity;
 
 module.exports = Identity;

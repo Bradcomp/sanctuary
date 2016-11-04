@@ -1,6 +1,6 @@
 'use strict';
 
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 var S = require('..');
 
@@ -17,7 +17,7 @@ describe('A', function() {
 
   it('A(f, x) is equivalent to f(x)', function() {
     eq(S.A(S.inc, 1), 2);
-    eq(R.map(S.A(S.__, 100), [S.inc, Math.sqrt]), [101, 10]);
+    eq(Z.map(S.A(S.__, 100), [S.inc, Math.sqrt]), [101, 10]);
   });
 
 });

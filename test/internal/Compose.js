@@ -1,6 +1,6 @@
 'use strict';
 
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 
 //  Compose :: (Apply f, Apply g) => { of :: b -> f b } -> { of :: c -> g c } -> f (g a) -> Compose f g a
@@ -10,24 +10,29 @@ var Compose = function(F) {
       return {
         '@@type': 'sanctuary/Compose',
         constructor: _Compose,
-        map: function(f) {
-          return _Compose(R.map(R.map(f), x));
+        'fantasy-land/map': function(f) {
+          return _Compose(Z.map(function(x) {
+            return Z.map(function(x) { return f(x); }, x);
+          }, x));
         },
-        ap: function(y) {
-          return _Compose(R.ap(R.map(R.ap, x), y.value));
+        'fantasy-land/ap': function(y) {
+          return _Compose(Z.ap(Z.map(Z.ap, x), y.value));
         },
-        equals: function(other) {
-          return R.equals(x, other.value);
+        'fantasy-land/equals': function(other) {
+          return Z.equals(x, other.value);
         },
+        inspect: function() { return this.toString(); },
         toString: function() {
-          return 'Compose(' + R.toString(F) + ')' +
-                        '(' + R.toString(G) + ')' +
-                        '(' + R.toString(x) + ')';
+          return 'Compose(' + Z.toString(F) + ')' +
+                        '(' + Z.toString(G) + ')' +
+                        '(' + Z.toString(x) + ')';
         },
         value: x
       };
     };
-    _Compose.of = function(x) { return _Compose(F.of(G.of(x))); };
+    _Compose['fantasy-land/of'] = function(x) {
+      return _Compose(Z.of(F, Z.of(G, x)));
+    };
     return _Compose;
   };
 };

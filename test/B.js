@@ -1,6 +1,6 @@
 'use strict';
 
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 var S = require('..');
 
@@ -16,7 +16,7 @@ describe('B', function() {
   });
 
   it('composes two functions assumed to be unary', function() {
-    eq(S.B(R.map(Math.sqrt), JSON.parse, '[1, 4, 9]'), [1, 2, 3]);
+    eq(S.B(function(xs) { return Z.map(Math.sqrt, xs); }, JSON.parse, '[1, 4, 9]'), [1, 2, 3]);
   });
 
 });

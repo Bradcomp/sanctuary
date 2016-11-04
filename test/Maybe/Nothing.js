@@ -1,6 +1,6 @@
 'use strict';
 
-var R = require('ramda');
+var Z = require('sanctuary-type-classes');
 
 var S = require('../..');
 
@@ -18,27 +18,23 @@ describe('Nothing', function() {
 
   it('provides an "ap" method', function() {
     eq(S.Nothing.ap.length, 1);
-    eq(S.Nothing.ap.toString(), 'Maybe#ap :: Maybe (a -> b) ~> Maybe a -> Maybe b');
     eq(S.Nothing.ap(S.Nothing), S.Nothing);
-    eq(S.Nothing.ap(S.Just(42)), S.Nothing);
+    eq(S.Nothing.ap(S.Just(S.inc)), S.Nothing);
   });
 
   it('provides a "chain" method', function() {
     eq(S.Nothing.chain.length, 1);
-    eq(S.Nothing.chain.toString(), 'Maybe#chain :: Maybe a ~> (a -> Maybe b) -> Maybe b');
     eq(S.Nothing.chain(S.head), S.Nothing);
   });
 
   it('provides a "concat" method', function() {
     eq(S.Nothing.concat.length, 1);
-    eq(S.Nothing.concat.toString(), 'Maybe#concat :: Semigroup a => Maybe a ~> Maybe a -> Maybe a');
     eq(S.Nothing.concat(S.Nothing), S.Nothing);
     eq(S.Nothing.concat(S.Just('foo')), S.Just('foo'));
   });
 
   it('provides an "equals" method', function() {
     eq(S.Nothing.equals.length, 1);
-    eq(S.Nothing.equals.toString(), 'Maybe#equals :: Maybe a ~> b -> Boolean');
     eq(S.Nothing.equals(S.Nothing), true);
     eq(S.Nothing.equals(S.Just(42)), false);
     eq(S.Nothing.equals(null), false);
@@ -46,7 +42,6 @@ describe('Nothing', function() {
 
   it('provides an "extend" method', function() {
     eq(S.Nothing.extend.length, 1);
-    eq(S.Nothing.extend.toString(), 'Maybe#extend :: Maybe a ~> (Maybe a -> a) -> Maybe a');
     eq(S.Nothing.extend(function(x) { return x.value / 2; }), S.Nothing);
 
     // associativity
@@ -58,9 +53,8 @@ describe('Nothing', function() {
 
   it('provides a "filter" method', function() {
     eq(S.Nothing.filter.length, 1);
-    eq(S.Nothing.filter.toString(), 'Maybe#filter :: Maybe a ~> (a -> Boolean) -> Maybe a');
-    eq(S.Nothing.filter(R.T), S.Nothing);
-    eq(S.Nothing.filter(R.F), S.Nothing);
+    eq(S.Nothing.filter(S.K(true)), S.Nothing);
+    eq(S.Nothing.filter(S.K(false)), S.Nothing);
 
     var m = S.Nothing;
     var f = function(n) { return n * n; };
@@ -73,31 +67,26 @@ describe('Nothing', function() {
 
   it('provides a "map" method', function() {
     eq(S.Nothing.map.length, 1);
-    eq(S.Nothing.map.toString(), 'Maybe#map :: Maybe a ~> (a -> b) -> Maybe b');
     eq(S.Nothing.map(function() { return 42; }), S.Nothing);
   });
 
   it('provides a "reduce" method', function() {
     eq(S.Nothing.reduce.length, 2);
-    eq(S.Nothing.reduce.toString(), 'Maybe#reduce :: Maybe a ~> ((b, a) -> b) -> b -> b');
     eq(S.Nothing.reduce(function(x, y) { return x - y; }, 42), 42);
   });
 
   it('provides a "sequence" method', function() {
     eq(S.Nothing.sequence.length, 1);
-    eq(S.Nothing.sequence.toString(), 'Maybe#sequence :: Applicative f => Maybe (f a) ~> (a -> f a) -> f (Maybe a)');
-    eq(S.Nothing.sequence(S.Either.of), S.Right(S.Nothing));
+    eq(S.Nothing.sequence(S.Right), S.Right(S.Nothing));
   });
 
   it('provides a "toBoolean" method', function() {
     eq(S.Nothing.toBoolean.length, 0);
-    eq(S.Nothing.toBoolean.toString(), 'Maybe#toBoolean :: Maybe a ~> () -> Boolean');
     eq(S.Nothing.toBoolean(), false);
   });
 
   it('provides a "toString" method', function() {
     eq(S.Nothing.toString.length, 0);
-    eq(S.Nothing.toString.toString(), 'Maybe#toString :: Maybe a ~> () -> String');
     eq(S.Nothing.toString(), 'Nothing');
   });
 
@@ -119,10 +108,10 @@ describe('Nothing', function() {
     var a = S.Nothing;
 
     // left identity
-    eq(a.empty().concat(a).equals(a), true);
+    eq(Z.empty(a.constructor).concat(a).equals(a), true);
 
     // right identity
-    eq(a.concat(a.empty()).equals(a), true);
+    eq(a.concat(Z.empty(a.constructor)).equals(a), true);
   });
 
   it('implements Functor', function() {
@@ -159,13 +148,13 @@ describe('Nothing', function() {
     var x = 7;
 
     // identity
-    eq(a.of(S.I).ap(b).equals(b), true);
+    eq(b.ap(Z.of(a.constructor, S.I)).equals(b), true);
 
     // homomorphism
-    eq(a.of(f).ap(a.of(x)).equals(a.of(f(x))), true);
+    eq(Z.of(a.constructor, x).ap(Z.of(a.constructor, f)).equals(Z.of(a.constructor, f(x))), true);
 
     // interchange
-    eq(a.of(function(f) { return f(x); }).ap(b).equals(b.ap(a.of(x))), true);
+    eq(b.ap(Z.of(a.constructor, function(f) { return f(x); })).equals(Z.of(a.constructor, x).ap(b)), true);
   });
 
   it('implements Chain', function() {
@@ -183,10 +172,10 @@ describe('Nothing', function() {
     var x = [1, 2, 3];
 
     // left identity
-    eq(a.of(x).chain(f).equals(f(x)), true);
+    eq(Z.of(a.constructor, x).chain(f).equals(f(x)), true);
 
     // right identity
-    eq(a.chain(a.of).equals(a), true);
+    eq(a.chain(function(x) { return Z.of(a.constructor, x); }).equals(a), true);
   });
 
 });
